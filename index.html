@@ -4,39 +4,58 @@
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script
+            src="https://unpkg.com/html5-qrcode"
+            type="text/javascript"
+        ></script>
         <title>Document</title>
     </head>
-    <script type="text/javascript">
-        function send() {
-            var element = document.getElementById("url");
-            console.log(element.value.length);
-            if (!element.value.length) {
-                alert("Unesite url");
-                return;
-            }
-            if (!element.value.includes("suf.purs.gov.rs")) {
-                alert("URL racuna nije dobar");
-                return;
-            }
-            fetch(
-                `https://spenderbenderapi.herokuapp.com/api/Receipt/analysis?url=${element.value}`
-            )
-                .then((response) => response.json())
-                .then((data) => {
-                    document.getElementById("racun").innerHTML =
-                        data.originalReceipt;
-                    document.getElementById("json").innerHTML = JSON.stringify(
-                        data,
-                        null,
-                        2
-                    );
-                });
-        }
-    </script>
     <body>
         <span>URL racuna:</span><input id="url" />
         <button onclick="send()">posalji</button>
         <div id="racun"></div>
         <pre id="json"></pre>
+        <div id="video"></div>
+        <script type="text/javascript" async>
+            const html5QrCode = new Html5Qrcode("video");
+            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                html5QrCode.stop();
+                alert(decodedText);
+                apiCall(decodedText);
+            };
+            const config = { fps: 10, qrbox: { width: 450, height: 450 } };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                qrCodeSuccessCallback
+            );
+
+            function send() {
+                var element = document.getElementById("url");
+                console.log(element.value.length);
+                if (!element.value.length) {
+                    alert("Unesite url");
+                    return;
+                }
+                if (!element.value.includes("suf.purs.gov.rs")) {
+                    alert("URL racuna nije dobar");
+                    return;
+                }
+                apiCall(element.value);
+                html5QrCode.stop();
+            }
+            const apiCall = (qrurl) =>
+                fetch(
+                    `https://spenderbenderapi.herokuapp.com/api/Receipt/analysis?url=${qrurl}`
+                )
+                    .then((response) => response.json())
+                    .then((data) => {
+                        document.getElementById("racun").innerHTML =
+                            data.originalReceipt;
+                        document.getElementById("json").innerHTML =
+                            JSON.stringify(data, null, 2);
+                    });
+        </script>
     </body>
 </html>
