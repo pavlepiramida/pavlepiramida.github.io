@@ -55,6 +55,9 @@
                             data.originalReceipt;
                         document.getElementById("json").innerHTML =
                             JSON.stringify(data, null, 2);
+                    })
+                    .catch((error) => {
+                        alert("Error:", error);
                     });
         </script>
     </body>
